@@ -1,6 +1,8 @@
 package com.userfront.service.impl;
 
 import java.math.BigDecimal;
+import java.security.Principal;
+import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -8,7 +10,10 @@ import org.springframework.stereotype.Service;
 import com.userfront.dao.PrimaryAccountDao;
 import com.userfront.dao.SavingsAccountDao;
 import com.userfront.domain.PrimaryAccount;
+import com.userfront.domain.PrimaryTransaction;
 import com.userfront.domain.SavingsAccount;
+import com.userfront.domain.SavingsTransaction;
+import com.userfront.domain.User;
 import com.userfront.service.AccountService;
 import com.userfront.service.UserService;
 
@@ -46,7 +51,86 @@ public class AccountServiceImpl implements AccountService {
 		return savingsAccountDao.findByAccountNumber(savingsAccount.getAccountNumber());
 	}
 	
+	@Override
+	public void deposit(String accountType, double amount, Principal principal) {
+		User user = userService.findByUsername(principal.getName());
+
+		if ("Primary".equalsIgnoreCase(accountType)) {
+			PrimaryAccount primaryAccount = user.getPrimaryAccount();
+			primaryAccount.setAccountBalance(primaryAccount.getAccountBalance().add(new BigDecimal(amount)));
+			primaryAccountDao.save(primaryAccount);
+			
+			Date date = new Date();
+			
+			PrimaryTransaction primaryTransaction = new PrimaryTransaction();
+			primaryTransaction.setDate(date);
+			primaryTransaction.setDescription("Deposit to Primary Account");
+			primaryTransaction.setType("Account");
+			primaryTransaction.setStatus("Finished");
+			primaryTransaction.setAmount(amount);
+			primaryTransaction.setAvailableBalance(primaryAccount.getAccountBalance());
+			primaryTransaction.setPrimaryAccount(primaryAccount);
+			
+		} else if ("savings".equalsIgnoreCase(accountType)) {
+			SavingsAccount savingsAccount = user.getSavingsAccount();
+			savingsAccount.setAccountBalance(savingsAccount.getAccountBalance().add(new BigDecimal(amount)));
+			savingsAccountDao.save(savingsAccount);
+			
+			Date date = new Date();
+			
+			SavingsTransaction savingsTransaction = new SavingsTransaction();
+			savingsTransaction.setDate(date);
+			savingsTransaction.setDescription("Deposit to Savings Account");
+			savingsTransaction.setType("Account");
+			savingsTransaction.setStatus("Finished");
+			savingsTransaction.setAmount(amount);
+			savingsTransaction.setAvailableBalance(savingsAccount.getAccountBalance());
+			savingsTransaction.setSavingsAccount(savingsAccount);
+		}
+		
+	}
+	
+	@Override
+	public void withdraw(String accountType, double amount, Principal principal) {
+		User user = userService.findByUsername(principal.getName());
+
+		if ("Primary".equalsIgnoreCase(accountType)) {
+			PrimaryAccount primaryAccount = user.getPrimaryAccount();
+			primaryAccount.setAccountBalance(primaryAccount.getAccountBalance().subtract(new BigDecimal(amount)));
+			primaryAccountDao.save(primaryAccount);
+			
+			Date date = new Date();
+			
+			PrimaryTransaction primaryTransaction = new PrimaryTransaction();
+			primaryTransaction.setDate(date);
+			primaryTransaction.setDescription("Withdraw to Primary Account");
+			primaryTransaction.setType("Account");
+			primaryTransaction.setStatus("Finished");
+			primaryTransaction.setAmount(amount);
+			primaryTransaction.setAvailableBalance(primaryAccount.getAccountBalance());
+			primaryTransaction.setPrimaryAccount(primaryAccount);
+			
+		} else if ("savings".equalsIgnoreCase(accountType)) {
+			SavingsAccount savingsAccount = user.getSavingsAccount();
+			savingsAccount.setAccountBalance(savingsAccount.getAccountBalance().subtract(new BigDecimal(amount)));
+			savingsAccountDao.save(savingsAccount);
+			
+			Date date = new Date();
+			
+			SavingsTransaction savingsTransaction = new SavingsTransaction();
+			savingsTransaction.setDate(date);
+			savingsTransaction.setDescription("Withdraw to Savings Account");
+			savingsTransaction.setType("Account");
+			savingsTransaction.setStatus("Finished");
+			savingsTransaction.setAmount(amount);
+			savingsTransaction.setAvailableBalance(savingsAccount.getAccountBalance());
+			savingsTransaction.setSavingsAccount(savingsAccount);
+		}
+		
+	}
 	private static int accountGen() {
 		return ++nextAccountNumber;
 	}
+
+
 }
