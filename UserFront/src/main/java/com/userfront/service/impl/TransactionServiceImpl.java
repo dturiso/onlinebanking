@@ -65,31 +65,49 @@ public class TransactionServiceImpl implements TransactionService {
     public void saveSavingsWithdrawTransaction(SavingsTransaction savingsTransaction) {
         savingsTransactionDao.save(savingsTransaction);
     }
-//    
-//    public void betweenAccountsTransfer(String transferFrom, String transferTo, String amount, PrimaryAccount primaryAccount, SavingsAccount savingsAccount) throws Exception {
-//        if (transferFrom.equalsIgnoreCase("Primary") && transferTo.equalsIgnoreCase("Savings")) {
-//            primaryAccount.setAccountBalance(primaryAccount.getAccountBalance().subtract(new BigDecimal(amount)));
-//            savingsAccount.setAccountBalance(savingsAccount.getAccountBalance().add(new BigDecimal(amount)));
-//            primaryAccountDao.save(primaryAccount);
-//            savingsAccountDao.save(savingsAccount);
-//
-//            Date date = new Date();
-//
-//            PrimaryTransaction primaryTransaction = new PrimaryTransaction(date, "Between account transfer from "+transferFrom+" to "+transferTo, "Account", "Finished", Double.parseDouble(amount), primaryAccount.getAccountBalance(), primaryAccount);
-//            primaryTransactionDao.save(primaryTransaction);
-//        } else if (transferFrom.equalsIgnoreCase("Savings") && transferTo.equalsIgnoreCase("Primary")) {
-//            primaryAccount.setAccountBalance(primaryAccount.getAccountBalance().add(new BigDecimal(amount)));
-//            savingsAccount.setAccountBalance(savingsAccount.getAccountBalance().subtract(new BigDecimal(amount)));
-//            primaryAccountDao.save(primaryAccount);
-//            savingsAccountDao.save(savingsAccount);
-//
-//            Date date = new Date();
-//
-//            SavingsTransaction savingsTransaction = new SavingsTransaction(date, "Between account transfer from "+transferFrom+" to "+transferTo, "Transfer", "Finished", Double.parseDouble(amount), savingsAccount.getAccountBalance(), savingsAccount);
-//            savingsTransactionDao.save(savingsTransaction);
-//        } else {
-//            throw new Exception("Invalid Transfer");
-//        }
-//    }
     
+	public void betweenAccountsTransfer(String transferFrom, String transferTo, String amount,
+			PrimaryAccount primaryAccount, SavingsAccount savingsAccount) throws Exception {
+		
+        if (transferFrom.equalsIgnoreCase("Primary") && transferTo.equalsIgnoreCase("Savings")) {
+            primaryAccount.setAccountBalance(primaryAccount.getAccountBalance().subtract(new BigDecimal(amount)));
+            savingsAccount.setAccountBalance(savingsAccount.getAccountBalance().add(new BigDecimal(amount)));
+            primaryAccountDao.save(primaryAccount);
+            savingsAccountDao.save(savingsAccount);
+
+            Date date = new Date();
+
+            PrimaryTransaction primaryTransaction = new PrimaryTransaction();
+            primaryTransaction.setDate(date);
+            primaryTransaction.setDescription("Between account transfer from "+transferFrom+" to "+transferTo);
+            primaryTransaction.setType("Account");
+            primaryTransaction.setStatus("Finished");
+            primaryTransaction.setAmount(Double.parseDouble(amount));
+            primaryTransaction.setAvailableBalance(primaryAccount.getAccountBalance());
+            primaryTransaction.setPrimaryAccount(primaryAccount);
+            
+            primaryTransactionDao.save(primaryTransaction);
+        } else if (transferFrom.equalsIgnoreCase("Savings") && transferTo.equalsIgnoreCase("Primary")) {
+            primaryAccount.setAccountBalance(primaryAccount.getAccountBalance().add(new BigDecimal(amount)));
+            savingsAccount.setAccountBalance(savingsAccount.getAccountBalance().subtract(new BigDecimal(amount)));
+            primaryAccountDao.save(primaryAccount);
+            savingsAccountDao.save(savingsAccount);
+
+            Date date = new Date();
+
+            SavingsTransaction savingsTransaction = new SavingsTransaction();
+            savingsTransaction.setDate(date);
+            savingsTransaction.setDescription("Between account transfer from "+transferFrom+" to "+transferTo);
+            savingsTransaction.setType("Transfer");
+            savingsTransaction.setStatus("Finished");
+            savingsTransaction.setAmount(Double.parseDouble(amount));
+            savingsTransaction.setAvailableBalance(savingsAccount.getAccountBalance());
+            savingsTransaction.setSavingsAccount(savingsAccount);
+            
+            savingsTransactionDao.save(savingsTransaction);
+        } else {
+            throw new Exception("Invalid Transfer");
+        }
+    }
+   
 }
