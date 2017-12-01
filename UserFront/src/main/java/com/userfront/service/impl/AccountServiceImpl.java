@@ -15,6 +15,7 @@ import com.userfront.domain.SavingsAccount;
 import com.userfront.domain.SavingsTransaction;
 import com.userfront.domain.User;
 import com.userfront.service.AccountService;
+import com.userfront.service.TransactionService;
 import com.userfront.service.UserService;
 
 @Service
@@ -30,6 +31,9 @@ public class AccountServiceImpl implements AccountService {
 	
 	@Autowired
 	private UserService userService;
+	
+	@Autowired
+	private TransactionService transactionService;
 	
 	public PrimaryAccount createPrimaryAccount() {
 		PrimaryAccount primaryAccount = new PrimaryAccount();
@@ -71,6 +75,8 @@ public class AccountServiceImpl implements AccountService {
 			primaryTransaction.setAvailableBalance(primaryAccount.getAccountBalance());
 			primaryTransaction.setPrimaryAccount(primaryAccount);
 			
+			transactionService.savePrimaryDepositTransaction(primaryTransaction);
+			
 		} else if ("savings".equalsIgnoreCase(accountType)) {
 			SavingsAccount savingsAccount = user.getSavingsAccount();
 			savingsAccount.setAccountBalance(savingsAccount.getAccountBalance().add(new BigDecimal(amount)));
@@ -86,6 +92,8 @@ public class AccountServiceImpl implements AccountService {
 			savingsTransaction.setAmount(amount);
 			savingsTransaction.setAvailableBalance(savingsAccount.getAccountBalance());
 			savingsTransaction.setSavingsAccount(savingsAccount);
+			
+			transactionService.saveSavingsDepositTransaction(savingsTransaction);
 		}
 		
 	}
@@ -94,6 +102,8 @@ public class AccountServiceImpl implements AccountService {
 	public void withdraw(String accountType, double amount, Principal principal) {
 		User user = userService.findByUsername(principal.getName());
 
+		//TODO: Add some business logic to control amounts on withdraws. For instance: avoid amount > balance 
+		
 		if ("Primary".equalsIgnoreCase(accountType)) {
 			PrimaryAccount primaryAccount = user.getPrimaryAccount();
 			primaryAccount.setAccountBalance(primaryAccount.getAccountBalance().subtract(new BigDecimal(amount)));
@@ -110,6 +120,8 @@ public class AccountServiceImpl implements AccountService {
 			primaryTransaction.setAvailableBalance(primaryAccount.getAccountBalance());
 			primaryTransaction.setPrimaryAccount(primaryAccount);
 			
+			transactionService.savePrimaryWithdrawTransaction(primaryTransaction);
+			
 		} else if ("savings".equalsIgnoreCase(accountType)) {
 			SavingsAccount savingsAccount = user.getSavingsAccount();
 			savingsAccount.setAccountBalance(savingsAccount.getAccountBalance().subtract(new BigDecimal(amount)));
@@ -125,6 +137,8 @@ public class AccountServiceImpl implements AccountService {
 			savingsTransaction.setAmount(amount);
 			savingsTransaction.setAvailableBalance(savingsAccount.getAccountBalance());
 			savingsTransaction.setSavingsAccount(savingsAccount);
+			
+			transactionService.saveSavingsWithdrawTransaction(savingsTransaction);
 		}
 		
 	}
