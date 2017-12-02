@@ -78,7 +78,7 @@ $(document).ready(function() {
         autoclose: true,
         todayBtn: true,
         startDate: "2013-02-14 10:00",
-        minuteStep: 10
+        minuteStep: 15
     });
 
     $('#submitAppointment').click(function () {
