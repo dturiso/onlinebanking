@@ -102,7 +102,7 @@ public class AccountServiceImpl implements AccountService {
 	public void withdraw(String accountType, double amount, Principal principal) {
 		User user = userService.findByUsername(principal.getName());
 
-		//TODO: Add some business logic to control amounts on withdraws. For instance: avoid amount > balance 
+		// TODO: Add some business logic to control amounts on withdraws. For instance: avoid amount > balance 
 		
 		if ("Primary".equalsIgnoreCase(accountType)) {
 			PrimaryAccount primaryAccount = user.getPrimaryAccount();
