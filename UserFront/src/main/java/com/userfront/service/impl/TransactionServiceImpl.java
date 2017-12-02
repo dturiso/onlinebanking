@@ -160,5 +160,53 @@ public class TransactionServiceImpl implements TransactionService {
 	public void deleteRecipientByName(String recipientName) {
 		recipientDao.deleteByName(recipientName);
 	}
+
+	@Override
+	public void toSomeoneElseTransfer(String recipientName, String accountType, String amount,
+			PrimaryAccount primaryAccount, SavingsAccount savingsAccount) {
+		
+		// FROM Primary TO Recipient
+        if (accountType.equalsIgnoreCase("Primary")) {
+            primaryAccount.setAccountBalance(primaryAccount.getAccountBalance().subtract(new BigDecimal(amount)));
+            primaryAccountDao.save(primaryAccount);
+
+            Date date = new Date();
+
+            PrimaryTransaction primaryTransaction = new PrimaryTransaction();
+            primaryTransaction.setDate(date);
+            primaryTransaction.setDescription("Transfer to recipient " + recipientName);
+            primaryTransaction.setType("Account");
+            primaryTransaction.setStatus("Finished");
+            primaryTransaction.setAmount(Double.parseDouble(amount));
+            primaryTransaction.setAvailableBalance(primaryAccount.getAccountBalance());
+            primaryTransaction.setPrimaryAccount(primaryAccount);
+            
+            primaryTransactionDao.save(primaryTransaction);
+
+            return;
+        } 
+        
+        // FROM Savings TO Recipient
+        if (accountType.equalsIgnoreCase("Savings")) {
+            savingsAccount.setAccountBalance(savingsAccount.getAccountBalance().subtract(new BigDecimal(amount)));
+            savingsAccountDao.save(savingsAccount);
+
+            Date date = new Date();
+
+            SavingsTransaction savingsTransaction = new SavingsTransaction();
+            savingsTransaction.setDate(date);
+            savingsTransaction.setDescription("Transfer to recipient " + recipientName);
+            savingsTransaction.setType("Transfer");
+            savingsTransaction.setStatus("Finished");
+            savingsTransaction.setAmount(Double.parseDouble(amount));
+            savingsTransaction.setAvailableBalance(savingsAccount.getAccountBalance());
+            savingsTransaction.setSavingsAccount(savingsAccount);
+            
+            savingsTransactionDao.save(savingsTransaction);
+
+            return;
+        }
+		
+	}
    
 }
