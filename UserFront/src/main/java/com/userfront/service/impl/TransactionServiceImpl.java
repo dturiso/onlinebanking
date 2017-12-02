@@ -1,18 +1,22 @@
 package com.userfront.service.impl;
 
 import java.math.BigDecimal;
+import java.security.Principal;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.userfront.dao.PrimaryAccountDao;
 import com.userfront.dao.PrimaryTransactionDao;
+import com.userfront.dao.RecipientDao;
 import com.userfront.dao.SavingsAccountDao;
 import com.userfront.dao.SavingsTransactionDao;
 import com.userfront.domain.PrimaryAccount;
 import com.userfront.domain.PrimaryTransaction;
+import com.userfront.domain.Recipient;
 import com.userfront.domain.SavingsAccount;
 import com.userfront.domain.SavingsTransaction;
 import com.userfront.domain.User;
@@ -35,6 +39,9 @@ public class TransactionServiceImpl implements TransactionService {
 	
 	@Autowired
 	private SavingsAccountDao savingsAccountDao;
+	
+	@Autowired
+	private RecipientDao recipientDao;
 	
 	public List<PrimaryTransaction> findPrimaryTransactionList(String username){
         User user = userService.findByUsername(username);
@@ -69,6 +76,7 @@ public class TransactionServiceImpl implements TransactionService {
 	public void betweenAccountsTransfer(String transferFrom, String transferTo, String amount,
 			PrimaryAccount primaryAccount, SavingsAccount savingsAccount) throws Exception {
 		
+		// FROM Primary TO Savings
         if (transferFrom.equalsIgnoreCase("Primary") && transferTo.equalsIgnoreCase("Savings")) {
             primaryAccount.setAccountBalance(primaryAccount.getAccountBalance().subtract(new BigDecimal(amount)));
             savingsAccount.setAccountBalance(savingsAccount.getAccountBalance().add(new BigDecimal(amount)));
@@ -87,7 +95,13 @@ public class TransactionServiceImpl implements TransactionService {
             primaryTransaction.setPrimaryAccount(primaryAccount);
             
             primaryTransactionDao.save(primaryTransaction);
-        } else if (transferFrom.equalsIgnoreCase("Savings") && transferTo.equalsIgnoreCase("Primary")) {
+            
+            // TODO: Create also a SavingsTransaction entry to inform the transfer has been received
+            return;
+        } 
+        
+        // FROM Savings TO Primary
+        if (transferFrom.equalsIgnoreCase("Savings") && transferTo.equalsIgnoreCase("Primary")) {
             primaryAccount.setAccountBalance(primaryAccount.getAccountBalance().add(new BigDecimal(amount)));
             savingsAccount.setAccountBalance(savingsAccount.getAccountBalance().subtract(new BigDecimal(amount)));
             primaryAccountDao.save(primaryAccount);
@@ -105,9 +119,46 @@ public class TransactionServiceImpl implements TransactionService {
             savingsTransaction.setSavingsAccount(savingsAccount);
             
             savingsTransactionDao.save(savingsTransaction);
-        } else {
-            throw new Exception("Invalid Transfer");
+            
+            // TODO: Create also a PrimaryTransaction entry to inform the transfer has been received
+            return;
         }
+        
+        throw new Exception("Invalid Transfer");
     }
+
+	//-----------------------------------------------
+	//  Recipients CRUD
+	//-----------------------------------------------
+
+	@Override
+	public List<Recipient> findRecipientList(Principal principal) {
+		String username = principal.getName();
+		
+		// TODO: create a custom method to get the filtered recipients. The actual solution is very inefficient
+		List<Recipient> recipientList = recipientDao.findAll().stream()		// converts list to stream
+				.filter(recipient -> username.equals(recipient.getUser().getUsername()))	// filters the line, 
+				.collect(Collectors.toList());
+		
+		return recipientList;
+	}
+
+	
+	@Override
+	public void saveRecipient(Recipient recipient) {
+		recipientDao.save(recipient);
+		
+	}
+
+	@Override
+	public Recipient findRecipientByName(String recipientName) {
+		Recipient recipient = recipientDao.findByName(recipientName);
+		return recipient;
+	}
+
+	@Override
+	public void deleteRecipientByName(String recipientName) {
+		recipientDao.deleteByName(recipientName);
+	}
    
 }
