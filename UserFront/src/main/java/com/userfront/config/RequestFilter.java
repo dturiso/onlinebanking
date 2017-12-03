@@ -27,6 +27,8 @@ public class RequestFilter implements Filter {
 		response.setHeader("Access-Control-Max-Age",  "3600");
 		response.setHeader("Access-Control-Allow-Credentials",  "true");
 		
+		System.out.println(new java.util.Date() + ": " + request.getMethod() + " " + request.getRequestURI());
+		
 		if (!request.getMethod().equalsIgnoreCase("OPTIONS")) {
 			try {
 				chain.doFilter(req,  res);
