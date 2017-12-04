@@ -18,7 +18,7 @@ import com.userfront.service.UserService;
 
 @RestController
 @RequestMapping("/api")
-//@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasRole('ADMIN')")
 public class UserResource {
 
     @Autowired
