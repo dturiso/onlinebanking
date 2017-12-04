@@ -9,14 +9,22 @@ import { Router } from '@angular/router';
 })
 export class NavbarComponent implements OnInit {
 
-  loggedIn: boolean;
+  loggedIn: boolean = false;
 
 	constructor(private loginService: LoginService, private router : Router) {
-		if(localStorage.getItem('PortalAdminHasLoggedIn') == '') {
+    console.log("NavbarComponent.constructor().before: loggedIn = " + this.loggedIn);
+    console.log("NavbarComponent.constructor().before: localStorage = " + localStorage.getItem('PortalAdminHasLoggedIn'));
+
+    if(localStorage.getItem('PortalAdminHasLoggedIn') == '' ||
+       localStorage.getItem('PortalAdminHasLoggedIn') == null) {
 			this.loggedIn = false;
 		} else {
 			this.loggedIn = true;
-		}
+    }
+
+    console.log("NavbarComponent.constructor().after: loggedIn = " + this.loggedIn);
+    console.log("NavbarComponent.constructor().after: localStorage = " + localStorage.getItem('PortalAdminHasLoggedIn'));
+
 	}
 
 	logout(){

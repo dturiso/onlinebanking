@@ -15,6 +15,7 @@ export class LoginService {
       'Content-Type': 'application/x-www-form-urlencoded'
       // 'Access-Control-Allow-Credentials' : true
     });
+    console.log("Sending credentials (" + params + " ) to " + url);
     return this.http.post(url, params, {headers: headers, withCredentials : true});
   }
 

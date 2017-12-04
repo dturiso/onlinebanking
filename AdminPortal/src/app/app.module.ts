@@ -9,13 +9,16 @@ import { NavbarComponent } from './navbar/navbar.component';
 import { LoginComponent } from './login/login.component';
 import { LoginService } from './login.service';
 import { routing } from './app.routing';
+import { UserAccountComponent } from './user-account/user-account.component';
+import { UserService } from './user.service';
 
 
 @NgModule({
   declarations: [
     AppComponent,
     NavbarComponent,
-    LoginComponent
+    LoginComponent,
+    UserAccountComponent
   ],
   imports: [
     BrowserModule,
@@ -23,7 +26,10 @@ import { routing } from './app.routing';
     HttpModule,
     routing
   ],
-  providers: [LoginService],
+  providers: [
+    LoginService,
+    UserService
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
