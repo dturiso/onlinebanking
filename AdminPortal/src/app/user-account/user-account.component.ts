@@ -18,11 +18,8 @@ export class UserAccountComponent implements OnInit {
   getUsers() {
     this.userService.getUsers().subscribe(
       res => {
-        console.log("res = " + res);
         let str1 = JSON.stringify(res);
-        console.log("str1 = "+str1);
         let str2 = JSON.parse(str1);
-        console.log("========================str2="+str2._body);
         this.userList = JSON.parse(str2._body);
         console.log(this.userList);
       },
